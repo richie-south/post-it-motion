@@ -1,5 +1,5 @@
 const cv = require('opencv4nodejs')
-const {crop, rescrop, resize, convert} = require('easyimage')
+const {crop, resize} = require('easyimage')
 const mulig = require('mulig')
 const fs = require('fs')
 const EventEmitter = require('events')
@@ -10,7 +10,6 @@ const encoder = new GIFEncoder(500, 501)
 const pngFileStream = require('png-file-stream')
 
 encoder.createReadStream().pipe(fs.createWriteStream('myanimated.gif'))
-
 
 class ProgressEmitter extends EventEmitter {}
 
@@ -36,9 +35,11 @@ const outDir = './images/out'
 console.time()
 fs.readdir(startDir, (err, dir) => {
   bar = new ProgressBar(':bar :current/:total :percent', {
+    width: 50,
+    complete: '■',
+    incomplete: '-',
     total: ((dir.length - 1) * 7) + (dir.length - 1),
   })
-  // console.log('dir', dir)
 
   mulig(
     dir.slice(0).map((imageName) =>
@@ -106,20 +107,17 @@ const foo = async (image, name, imageName, isLast) => {
       dst: `${outDir}/${name}.png`,
     })
 
-    // encoder.addFrame(`${outDir}/${index}.jpg`)
     progressEmitter.emit('tick')
 
     if (isLast) {
-      /* encoder.finish() */
       pngFileStream('images/out/*.png')
         .on('data', () => {
           progressEmitter.emit('tick')
         })
-        .pipe(encoder.createWriteStream({ repeat: 0, delay: 50, quality: 10 }))
+        .pipe(encoder.createWriteStream({ repeat: 0, delay: 110, quality: 10 }))
         .pipe(fs.createWriteStream('myanimated.gif'))
     }
-    // console.log('done', index)
   } catch (error) {
-    console.log('error', error)
+    /* console.log('error', error) */
   }
 }
