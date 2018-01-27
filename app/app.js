@@ -32,6 +32,7 @@ const toAlphName = (alph, nr, name = '') =>
 
 const startDir = './images/in'
 const outDir = './images/out'
+const cropedDir = './images/croped'
 console.time()
 fs.readdir(startDir, (err, dir) => {
   bar = new ProgressBar(':bar :current/:total :percent', {
@@ -93,7 +94,7 @@ const foo = async (image, name, imageName, isLast) => {
       cropWidth: width, // + -20,
       x, // : x + 10,
       y, // : y + 10,
-      dst: `${outDir}/${name}.png`,
+      dst: `${cropedDir}/${name}.jpg`,
     })
 
     progressEmitter.emit('tick')
@@ -103,7 +104,7 @@ const foo = async (image, name, imageName, isLast) => {
       width: 500,
       height: 500,
       ignoreAspectRatio: true,
-      src: `${outDir}/${name}.png`,
+      src: `${cropedDir}/${name}.jpg`,
       dst: `${outDir}/${name}.png`,
     })
 
@@ -115,7 +116,7 @@ const foo = async (image, name, imageName, isLast) => {
           progressEmitter.emit('tick')
         })
         .pipe(encoder.createWriteStream({ repeat: 0, delay: 120, quality: 10 }))
-        .pipe(fs.createWriteStream('lingonsaft.gif'))
+        .pipe(fs.createWriteStream('lingonsaft_typescript.gif'))
     }
   } catch (error) {
     /* console.log('error', error) */
