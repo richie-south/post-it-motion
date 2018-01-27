@@ -20,8 +20,16 @@ let bar
 progressEmitter.on('tick', () => {
   bar.tick()
 })
-const alp = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'p', 'q', 'r', 's', 't', '', '']
 
+const alph = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+const toAlphName = (alph, nr, name = '') =>
+  nr > alph.length - 1
+    ? toAlphName(
+      alph,
+      nr - alph.length,
+      name + alph[alph.length - 1]
+    )
+    : name + alph[nr]
 
 const startDir = './images/in'
 const outDir = './images/out'
@@ -39,18 +47,18 @@ fs.readdir(startDir, (err, dir) => {
       progressEmitter.emit('tick')
       foo(
         value,
-        alp[index],
+        toAlphName(alph, index),
         dir[index],
         isDone
       )
     },
-    (value) => {
+    () => {
       // console.log('error mulig', value)
     }
   )
 })
 
-const foo = async (image, index, imageName, isLast) => {
+const foo = async (image, name, imageName, isLast) => {
   try {
     const grayImage = await image.cvtColorAsync(cv.COLOR_BGR2GRAY)
     progressEmitter.emit('tick')
@@ -84,7 +92,7 @@ const foo = async (image, index, imageName, isLast) => {
       cropWidth: width, // + -20,
       x, // : x + 10,
       y, // : y + 10,
-      dst: `${outDir}/${index}.png`,
+      dst: `${outDir}/${name}.png`,
     })
 
     progressEmitter.emit('tick')
@@ -94,8 +102,8 @@ const foo = async (image, index, imageName, isLast) => {
       width: 500,
       height: 500,
       ignoreAspectRatio: true,
-      src: `${outDir}/${index}.png`,
-      dst: `${outDir}/${index}.png`,
+      src: `${outDir}/${name}.png`,
+      dst: `${outDir}/${name}.png`,
     })
 
     // encoder.addFrame(`${outDir}/${index}.jpg`)
