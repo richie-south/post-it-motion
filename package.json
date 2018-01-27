@@ -1,0 +1,32 @@
+{
+  "name": "post-it-motion",
+  "version": "0.0.1",
+  "description": "a stop motion studio for post it notes",
+  "main": "./app/app.js",
+  "scripts": {
+    "start": "node ./app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/richie-south/post-it-motion.git"
+  },
+  "author": "richard soderman",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/richie-south/post-it-motion/issues"
+  },
+  "homepage": "https://github.com/richie-south/post-it-motion#readme",
+  "devDependencies": {
+    "eslint": "^4.16.0"
+  },
+  "dependencies": {
+    "easyimage": "^3.0.0",
+    "gifencoder": "^1.1.0",
+    "mulig": "^1.5.6",
+    "opencv4nodejs": "^2.37.1",
+    "png-file-stream": "^1.0.0",
+    "progress": "^2.0.0",
+    "rxjs": "^5.5.6"
+  }
+}
