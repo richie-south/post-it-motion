@@ -6,7 +6,7 @@ const EventEmitter = require('events')
 const ProgressBar = require('progress')
 
 const GIFEncoder = require('gifencoder')
-const encoder = new GIFEncoder(500, 501)
+const encoder = new GIFEncoder(500, 500)
 const pngFileStream = require('png-file-stream')
 
 encoder.createReadStream().pipe(fs.createWriteStream('myanimated.gif'))
@@ -114,8 +114,8 @@ const foo = async (image, name, imageName, isLast) => {
         .on('data', () => {
           progressEmitter.emit('tick')
         })
-        .pipe(encoder.createWriteStream({ repeat: 0, delay: 110, quality: 10 }))
-        .pipe(fs.createWriteStream('myanimated.gif'))
+        .pipe(encoder.createWriteStream({ repeat: 0, delay: 120, quality: 10 }))
+        .pipe(fs.createWriteStream('lingonsaft.gif'))
     }
   } catch (error) {
     /* console.log('error', error) */
