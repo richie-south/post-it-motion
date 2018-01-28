@@ -1,24 +1,56 @@
 const cv = require('opencv4nodejs')
-const {crop, resize} = require('easyimage')
 const mulig = require('mulig')
 const fs = require('fs')
 const EventEmitter = require('events')
 const ProgressBar = require('progress')
-
+const gm = require('gm').subClass({imageMagick: true})
+const async = require('async')
 const GIFEncoder = require('gifencoder')
 const encoder = new GIFEncoder(500, 500)
-const pngFileStream = require('png-file-stream')
+const cmd = require('node-cmd')
 
 encoder.createReadStream().pipe(fs.createWriteStream('myanimated.gif'))
 
 class ProgressEmitter extends EventEmitter {}
-
 const progressEmitter = new ProgressEmitter()
 let bar
-
 progressEmitter.on('tick', () => {
   bar.tick()
 })
+
+const CropResQueue = async.queue(({imageName, name, height, width, x, y, isLast}, done) => {
+  const streamIn = fs.createReadStream(`${startDir}/${imageName}`)
+  const streamOut = fs.createWriteStream(`${outDir}/${name}.jpg`)
+  gm(streamIn)
+    .crop(width, height, x, y)
+    .resize(500, 500, '!')
+    .stream()
+    .pipe(streamOut)
+    .on('finish', () => {
+      progressEmitter.emit('tick')
+      done()
+      if (isLast) {
+        cmd.get(
+          'cd images/out && convert -delay 0.170 -loop 0 *.jpg animated.gif',
+          () => {
+            progressEmitter.emit('tick')
+            console.log('done')
+          }
+        )
+      }
+    })
+}, 10)
+
+const FooQueue = async.queue(({image, name, imageName, isLast}, done) => {
+  foo(
+    image,
+    name,
+    imageName,
+    isLast
+  ).then(() => {
+    done()
+  })
+}, 5)
 
 const alph = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
 const toAlphName = (alph, nr, name = '') =>
@@ -32,14 +64,13 @@ const toAlphName = (alph, nr, name = '') =>
 
 const startDir = './images/in'
 const outDir = './images/out'
-const cropedDir = './images/croped'
-console.time()
+
 fs.readdir(startDir, (err, dir) => {
   bar = new ProgressBar(':bar :current/:total :percent', {
     width: 50,
     complete: '■',
     incomplete: '-',
-    total: ((dir.length - 1) * 7) + (dir.length - 1),
+    total: ((dir.length - 1) * 6) + 1,
   })
 
   mulig(
@@ -47,12 +78,12 @@ fs.readdir(startDir, (err, dir) => {
       cv.imreadAsync(`${startDir}/${imageName}`)),
     (value, index, isDone) => {
       progressEmitter.emit('tick')
-      foo(
-        value,
-        toAlphName(alph, index),
-        dir[index],
-        isDone
-      )
+      FooQueue.push({
+        image: value,
+        name: toAlphName(alph, index),
+        imageName: dir[index],
+        isLast: isDone,
+      })
     },
     () => {
       // console.log('error mulig', value)
@@ -85,39 +116,11 @@ const foo = async (image, name, imageName, isLast) => {
         return 0
       })[0]
 
-
     const {height, width, x, y} = largestContours.boundingRect()
 
-    await crop({
-      src: `${startDir}/${imageName}`,
-      cropHeight: height, // + -20,
-      cropWidth: width, // + -20,
-      x, // : x + 10,
-      y, // : y + 10,
-      dst: `${cropedDir}/${name}.jpg`,
-    })
+    CropResQueue.push({imageName, name, height, width, x, y, isLast})
 
-    progressEmitter.emit('tick')
-
-    await resize({
-      onlyDownscale: true,
-      width: 500,
-      height: 500,
-      ignoreAspectRatio: true,
-      src: `${cropedDir}/${name}.jpg`,
-      dst: `${outDir}/${name}.png`,
-    })
-
-    progressEmitter.emit('tick')
-
-    if (isLast) {
-      pngFileStream('images/out/*.png')
-        .on('data', () => {
-          progressEmitter.emit('tick')
-        })
-        .pipe(encoder.createWriteStream({ repeat: 0, delay: 120, quality: 10 }))
-        .pipe(fs.createWriteStream('lingonsaft_typescript.gif'))
-    }
+    return true
   } catch (error) {
     /* console.log('error', error) */
   }
